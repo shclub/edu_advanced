@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: integration-server-deployment
+  labels:
+    app: integration-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: integration-server
+  template:
+    metadata:
+      name: integration-server
+      labels:
+        app: integration-server
+    spec:
+      containers:
+      - name: integration-server
+        image: nexus.dspace.kt.co.kr/icis/elastic-agent:8.9.2
+        env:                                                                               
+        - name: FLEET_SERVER_ENABLE                                                         ## Fleet Server 역할 부여(1 = True)
+          value: "1"
+        - name: FLEET_SERVER_ELASTICSEARCH_HOST                                             ## Elasticseach service host와 port 설정
+          value: https://elasticsearch-master:9200
+        - name: FLEET_SERVER_POLICY_NAME                                                    ## Kibana에서 생성한 Fleet Server agent policy 이름            -> 위에 나온 name 값 입력
+          value: fleet-server-policy
+        - name: FLEET_SERVER_SERVICE_TOKEN                                                  ## Kibana에서 생성한 Fleet Server agent policy의 service token -> 위에 나온 token 값 입력
+          value: AAEAAWVsYXN0aWMvZmxlZXQtc2VydmVyL3Rva2VuLTE2ODAxNjgyMDQyNjM6ZmgwNnVBb1BUNDY1M0tjMnk4VXIyZw
+        - name: FLEET_SERVER_ELASTICSEARCH_INSECURE                                         ## 인증서 검증 절차를 스킵
+          value: "1"
+        - name: FLEET_SERVER_PORT                                                           ## Fleet Server port 설정, 일반적으로 8220 사용
+          value: "8220"
+        ports:
+        - containerPort: 8220                                                               ## Fleet Server용 port 설정
+          protocol: TCP
+        - containerPort: 8200                                                               ## APM Server용 port 사전 설정
+          protocol: TCP
+        volumeMounts:                                                                       ## 기타 volumemount
+        - name: kafka-crt                                                                      
+          readOnly: true                                                               
+          mountPath: /var/tmp                                                              
+      nodeSelector:                                                                         ## node selector 설정                                                                
+        elastic-system: 'true'
+        sa: 'true'
+      serviceAccount: elastic-agent                                                         ## service account는 role, role-binding에서 설정한 serviceaccount 사용
+      volumes:                                                                              ## 추가로 mount 필요한 파일 설정
+        - name: kafka-crt                                                                   ## ex. Kafka 연동을 위해 필요하 인증파일
+          secret:
+            secretName: kafka-crt
+            defaultMode: 420
+      imagePullSecrets:                                                                     ## imeagepullsecret 설정
+        - "name": "dspace-nexus"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-server                                                                        ## Fleet Server용 service
+  namespace: elastic-system                                                                 ## 일반적으로 8220 port 사용
+  labels:
+    k8s-app: elastic-agent
+    app: integration-server
+spec:
+  type: ClusterIP
+  selector:
+    app: integration-server
+  ports:
+  - name: http
+    port: 8220
+    protocol: TCP
+    targetPort: 8220
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apm-server                                                                          ## APM Server용 service 사전 설정
+  namespace: elastic-system                                                                 ## 일반적으로 8200 port 사용
+  labels:
+    k8s-app: elastic-agent
+    app: integration-server
+spec:
+  type: ClusterIP
+  selector:
+    app: integration-server
+  ports:
+  - name: http
+    port: 8200
+    protocol: TCP
+    targetPort: 8200
