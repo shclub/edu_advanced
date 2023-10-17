@@ -1,0 +1,68 @@
+## Daemonset Elastic Agent용 Role, Rolebinding | ClusterRole, ClusterRolebinding은 Fleet server 설치 시 이미 생성 | metadata, namespace 외 추가 변경 필요없음
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: elastic-ds-system
+  name: elastic-agent-rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: elastic-agent
+    namespace: elastic-ds-system
+roleRef:
+  kind: Role
+  name: elastic-agent-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: elastic-agent-kubeadm-config-rolebinding
+  namespace: elastic-ds-system
+subjects:
+  - kind: ServiceAccount
+    name: elastic-agent
+    namespace: elastic-ds-system
+roleRef:
+  kind: Role
+  name: elastic-agent-kubeadm-config-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: elastic-agent-role
+  # Should be the namespace where elastic-agent is running
+  namespace: elastic-ds-system
+  labels:
+    k8s-app: elastic-agent
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs: ["get", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: elastic-agent-kubeadm-config-role
+  namespace: elastic-ds-system
+  labels:
+    k8s-app: elastic-agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    resourceNames:
+      - kubeadm-config
+    verbs: ["get"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: elastic-agent
+  namespace: elastic-ds-system
+  labels:
+    k8s-app: elastic-agent
+    app: integraion-server
