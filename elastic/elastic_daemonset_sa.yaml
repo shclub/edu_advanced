@@ -1,4 +1,17 @@
-## Daemonset Elastic Agent용 Role, Rolebinding | ClusterRole, ClusterRolebinding은 Fleet server 설치 시 이미 생성 | metadata, namespace 외 추가 변경 필요없음
+## Daemonset Elastic Agent용 Role, Rolebinding, ClusterRole, ClusterRolebinding | metadata, namespace 외 추가 변경 필요없음
+--- ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: elastic-agent-clusterrolebinding
+subjects:
+  - kind: ServiceAccount
+    name: elastic-agent
+    namespace: elastic-ds-system
+roleRef:
+  kind: ClusterRole
+  name: elastic-agent-clusterrole
+  apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -29,6 +42,76 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: elastic-agent-clusterrole
+  labels:
+    k8s-app: elastic-agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - namespaces
+      - events
+      - pods
+      - services
+      - configmaps
+      # Needed for cloudbeat
+      - serviceaccounts
+      - persistentvolumes
+      - persistentvolumeclaims
+    verbs: ["get", "list", "watch"]
+  # Enable this rule only if planing to use kubernetes_secrets provider
+  #- apiGroups: [""]
+  #  resources:
+  #  - secrets
+  #  verbs: ["get"]
+  - apiGroups: ["extensions"]
+    resources:
+      - replicasets
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources:
+      - statefulsets
+      - deployments
+      - replicasets
+      - daemonsets
+    verbs: ["get", "list", "watch"]
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/stats
+    verbs:
+      - get
+  - apiGroups: [ "batch" ]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: [ "get", "list", "watch" ]
+  # Needed for apiserver
+  - nonResourceURLs:
+      - "/metrics"
+    verbs:
+      - get
+  # Needed for cloudbeat
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources:
+      - clusterrolebindings
+      - clusterroles
+      - rolebindings
+      - roles
+    verbs: ["get", "list", "watch"]
+  # Needed for cloudbeat
+  - apiGroups: ["policy"]
+    resources:
+      - podsecuritypolicies
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "storage.k8s.io" ]
+    resources:
+      - storageclasses
+    verbs: [ "get", "list", "watch" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: elastic-agent-role
@@ -56,8 +139,7 @@ rules:
       - configmaps
     resourceNames:
       - kubeadm-config
-    verbs: ["get"]
----
+    verbs: ["get"] ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
