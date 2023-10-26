@@ -66,6 +66,49 @@ ingress : nginx 를 주로 사용
 
 
 
-Prometheus Journey : https://youtu.be/_bI_WcBc4ak?si=QoZMNBRKGDhTxLjn  
-Prometheus helm 설치와 Operator : https://youtu.be/qHIgk547SVA?si=8_f0gBHVEQPxHFOr  
-Prometheus Exporter 예제 : https://youtu.be/iJyC6A38qwY?si=d3HQ5PDU-pDUGYq1  
+
+<br/>
+
+
+다른 namespace 에서 서비스 호출해 보기
+
+참고 : https://anggeum.tistory.com/entry/Kubernetes-%EC%BF%A0%EB%B2%84%EB%84%A4%ED%8B%B0%EC%8A%A4-%EC%84%9C%EB%B9%84%EC%8A%A4Service-Deep-Dive-Cluster-DNS  
+
+<br/>
+
+```bash
+[root@bastion edu_ready]# cat netshoot.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netshoot
+spec:
+  containers:
+  - name: netshoot
+    image: ghcr.io/shclub/netshoot
+    command: ['sh', '-c', 'sleep 6000']
+    imagePullPolicy: IfNotPresent
+```  
+
+<br/>
+
+Network Policy : https://velog.io/@_zero_/%EC%BF%A0%EB%B2%84%EB%84%A4%ED%8B%B0%EC%8A%A4-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC-%EC%A0%95%EC%B1%85NetworkPolicy-%EA%B0%9C%EB%85%90-%EB%B0%8F-%EC%84%A4%EC%A0%95  
+
+
+<br/>
+
+
+[root@bastion edu_ready]# kubectl get svc -n edu16
+NAME             TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+canary-service   NodePort    172.30.195.65    <none>        80:30564/TCP   5h
+flask-edu4-app   ClusterIP   172.30.188.184   <none>        5000/TCP       7h2m
+[root@bastion edu_ready]# kubectl exec -it netshoot sh -n edu18
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
+~ # curl canary-service.edu16
+{
+    "color": "red",
+    "status": "ok"
+}
+~ # curl flask-edu4-app.edu16:5000
+ Container EDU | POD Working : flask-edu4-app-7876ccd5db-nmnrl | v=1
+~ #

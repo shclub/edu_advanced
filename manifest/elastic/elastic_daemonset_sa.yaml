@@ -1,122 +1,52 @@
-## Daemonset Elastic Agent용 Role, Rolebinding, ClusterRole, ClusterRolebinding | metadata, namespace 외 추가 변경 필요없음
---- ---
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: elastic-agent-clusterrolebinding
-subjects:
-  - kind: ServiceAccount
-    name: elastic-agent
-    namespace: elastic-ds-system
-roleRef:
-  kind: ClusterRole
-  name: elastic-agent-clusterrole
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  namespace: elastic-ds-system
+  namespace: elastic-daemonset
   name: elastic-agent-rolebinding
 subjects:
   - kind: ServiceAccount
     name: elastic-agent
-    namespace: elastic-ds-system
+    namespace: elastic-daemonset
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: elastic-agent-role
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: elastic-agent-kubeadm-config-rolebinding
-  namespace: elastic-ds-system
+  namespace: elastic-daemonset
 subjects:
   - kind: ServiceAccount
     name: elastic-agent
-    namespace: elastic-ds-system
+    namespace: elastic-daemonset
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: elastic-agent-kubeadm-config-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: elastic-agent-role-nodes-rolebinding
+  namespace: elastic-daemonset
+subjects:
+  - kind: ServiceAccount
+    name: elastic-agent
+    namespace: elastic-daemonset
+roleRef:
+  kind: ClusterRole
+  name: elastic-agent-role-nodes
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: elastic-agent-clusterrole
-  labels:
-    k8s-app: elastic-agent
-rules:
-  - apiGroups: [""]
-    resources:
-      - nodes
-      - namespaces
-      - events
-      - pods
-      - services
-      - configmaps
-      # Needed for cloudbeat
-      - serviceaccounts
-      - persistentvolumes
-      - persistentvolumeclaims
-    verbs: ["get", "list", "watch"]
-  # Enable this rule only if planing to use kubernetes_secrets provider
-  #- apiGroups: [""]
-  #  resources:
-  #  - secrets
-  #  verbs: ["get"]
-  - apiGroups: ["extensions"]
-    resources:
-      - replicasets
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources:
-      - statefulsets
-      - deployments
-      - replicasets
-      - daemonsets
-    verbs: ["get", "list", "watch"]
-  - apiGroups:
-      - ""
-    resources:
-      - nodes/stats
-    verbs:
-      - get
-  - apiGroups: [ "batch" ]
-    resources:
-      - jobs
-      - cronjobs
-    verbs: [ "get", "list", "watch" ]
-  # Needed for apiserver
-  - nonResourceURLs:
-      - "/metrics"
-    verbs:
-      - get
-  # Needed for cloudbeat
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources:
-      - clusterrolebindings
-      - clusterroles
-      - rolebindings
-      - roles
-    verbs: ["get", "list", "watch"]
-  # Needed for cloudbeat
-  - apiGroups: ["policy"]
-    resources:
-      - podsecuritypolicies
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [ "storage.k8s.io" ]
-    resources:
-      - storageclasses
-    verbs: [ "get", "list", "watch" ]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
   name: elastic-agent-role
   # Should be the namespace where elastic-agent is running
-  namespace: elastic-ds-system
+  namespace: elastic-daemonset
   labels:
     k8s-app: elastic-agent
 rules:
@@ -127,10 +57,24 @@ rules:
     verbs: ["get", "create", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
+metadata:
+  name: elastic-agent-role-nodes
+  # Should be the namespace where elastic-agent is running
+  namespace: elastic-daemonset
+  labels:
+    k8s-app: elastic-agent
+rules:
+  - apiGroups: [""]
+    resources:
+      - ''
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
   name: elastic-agent-kubeadm-config-role
-  namespace: elastic-ds-system
+  namespace: elastic-daemonset
   labels:
     k8s-app: elastic-agent
 rules:
@@ -139,12 +83,13 @@ rules:
       - configmaps
     resourceNames:
       - kubeadm-config
-    verbs: ["get"] ---
+    verbs: ["get"]
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: elastic-agent
-  namespace: elastic-ds-system
+  namespace: elastic-daemonset
   labels:
     k8s-app: elastic-agent
     app: integraion-server

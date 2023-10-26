@@ -38,7 +38,7 @@
 
 0. Chapter 0 : 프로그램 설치  ( [가이드 문서보기](https://github.com/shclub/edu/blob/master/okd4_install.md) )  
 
-     - OKD , ArgoCD , ElasticSearch , Opensearch 설치
+     - OKD , ArgoCD , Elastic Stack , Opensearch , Minio 설치
 
 
      - 환경 정보  ( [가이드 문서보기](./environment.md) )  
@@ -50,6 +50,7 @@
      - kubernetes Summary
        - 환경 점검 : okd console 
        - k8s 아키텍처 및 리소스 
+       - Observability
 
      <br/>
 

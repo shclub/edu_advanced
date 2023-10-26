@@ -13,10 +13,11 @@
 
 4. Worker Node 접속 정보
 
-5. Opensearch 접속 정보
+5. Opensearch Dashboard 접속 정보
 
 6. Kibana 접속 정보
 
+7. Grafana 접속 정보
 
 
 <br/>
@@ -40,7 +41,6 @@ OKD WEB Console : https://console-openshift-console.apps.okd4.ktdemo.duckdns.org
 
 <br/>
 
-
 ## ArgoCD 접속 정보
  
 <br/>
@@ -53,7 +53,6 @@ OKD : https://argocd.apps.okd4.ktdemo.duckdns.org
 - 비밀번호 : 사전 공지  
 
 <br/>
-
 
 ## Minio 접속 정보
  
@@ -78,7 +77,7 @@ Minio Web Console : https://minio.apps.okd4.ktdemo.duckdns.org
 
 <br/>
 
-## Opensearch 접속 정보
+## Opensearch Dashboard 접속 정보
  
 <br/>
 
@@ -89,9 +88,9 @@ Opensearch Dashboard : https://opensearch.apps.okd4.ktdemo.duckdns.org
 - 계정 : edu + 순번  ( 예: edu1 )
 - 비밀번호 : 사전 공지  
 
+<br/>
 
-
-## kibana ( elasticsearch) 접속 정보
+## kibana ( elasticsearch ) 접속 정보
  
 <br/>
 
@@ -102,6 +101,20 @@ kibana : https://kibana.apps.okd4.ktdemo.duckdns.org
 - 계정 : edu + 순번  ( 예: edu1 )
 - 비밀번호 : 사전 공지  
 
+<br/>
+
+## Grafana  접속 정보
+ 
+<br/>
+
+
+grafana : https://grafana-route-openshift-user-workload-monitoring.apps.okd4.ktdemo.duckdns.org/  
+
+
+- 계정 : edu + 순번  ( 예: edu1 )
+- 비밀번호 : 사전 공지  
+
+<br/>
 
 ## 환경 구성
 
