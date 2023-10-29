@@ -1,104 +1,31 @@
-# Observability ( Prometheus Metric 수집 )
+#  Prometheus Metric 수집 
  
+<br/>
+
+Prometheus 에 대한 이해와 k8s metric 수집 실습을 진행한다.
 
 <br/>
 
-Observability 에 대한 이해와 Prometheus 를 통한 k8s metric 수집 실습을 진행한다.
 
-<br/>
-
-
-1. Observability 
+1. metric 수집 방식
 
 2. k8s metric 수집 구조
 
 3. Prometheus 소개 / Grafana 사용 방법 
 
-4. Metric 수집 실습 : Node Exporter ( Ubuntu VM )
+4. Metric 수집 실습 (과제) : Node Exporter ( Ubuntu VM )
 
-5. Application Metric 수집 ( Frontend / Backend )
+5. Application Metric 수집 실습 :  Frontend / Backend 
 
 6. Federation & Thanos 
 
-
-<br/>
-
-## 1. Observability 
-
-<br/>
-
-참고 : youtube link
-
-<br/>
-
-Observability는 크게 Elastic Stack 과 Grafana Labs 의 Loki Stack 으로 구분이 되며 최근에는 SaaS 형태로도 지원 
-
-<br/>
-
-<img src="./assets/observability_1.png" style="width: 100%; height: auto;"/>
-
-<br/>
-
-Loki Stack은 Grafana Labs 의 Observability  솔루션으로 오픈소스로 사용이 가능하며 OKD 4.11 버전부터는 EFK (Elastic-Fluntd-Kibana) 대신 Loki Stack으로 기본 모니터링이 변경 되었다.
-
-<img src="./assets/observability_2.png" style="width: 100%; height: auto;"/>
-
-<br/>
-
-Open Tracing 비교 : Distributed tracing은 복잡한 마이크로 서비스 모니터링 환경에서 아주 중요하고 아래는 3종류의 오픈소스 트레이싱 솔루션을 비교한다   
+7. prometheus 내부 구조
 
 
-<img src="./assets/observability_3.png" style="width: 100%; height: auto;"/>
 
-<br/>
+<br
 
-최근에는 OpenTelemetry 를 통하여 데이터를 수집 하는 방식을 많이 사용한다.  
-
-<br/>
-
-OpenTelemetry (축약해서 Otel)은 trace, metric, log와 같은 telemetry 데이터를 instrumenting, generating, collecting, exporting 하기 위한 말 그대로 모든 것이 열려있는 개방적인 모니터링 도구   
-
-- 2019년 2개 프로젝트 병합  :  OpenTracing + OpenCensus (Google Open Source community project)  
-
-<br/>
-
-개별 모니터링 제품 벤더가 내부적으로 개발하는 폐쇄적인 방식이 아닌 오픈 소스로 개방되어 수많은 개발자들이 만들어가는 모니터링 도구입니다.  
-Otel 의 목표는 벤더에 종속되지 않는 SDK, API, tool을 통해 telemetry 데이터를 측정하고 Observability backend로 전송하는 것.  
-
-- Dynatrace 는 Otel 의 Top Contributor  
-
-<br/>
-
-<img src="./assets/observability_4.png" style="width: 100%; height: auto;"/>
-
-<br/>  
-
-Elastic은 OpenTelemetry에 적극적으로 참여하고 있으며 Elastic APM Agent / Elastic Agent에서 변환하여 Elasticsearch에 저장할 수 있다.    
-
-- Jenkins 같은 경우 OpenTelemetry plugin 을 통해 Otel을 지원 하며 Elastic 과 연동이 가능 하다.  
-  
-<img src="./assets/observability_5.png" style="width: 100%; height: auto;"/>
-
-<br/>  
-
-BCI (Byte Code Instrumentation) 란 Java 에서 가장 원초적이고 강력한 프로그래밍 기법이다.
-BCI 는 Java 의 Byte Code에 대해 직접적으로 수정을 가해서, 소스 파일의 수정 없이 원하는 기능을 부여할수 있고
-이러한 특징 때문에 모니터링(APM) 툴들이 대부분 BCI 기능을 이용하고 있으며, BCI 를 통해 애플리케이션의 수정 없이 성능 측정에 필요한 요소들을 삽입할 수 있다.   
-
-<br/>
-
-AOP 를 구현하는 핵심 기술이 바로 BCI 이다.
-AOP 컴포넌트들이 컴파일시간이나 런타임 시간에 Aspect 와 Business Logic 을 Weaving 할수 있는 이유가 바로 BCI 를 사용해서 Java 바이트 코드를 직접 수정할 수 있는 기술을 사용하기 때문이다.  
-
-- 참고 : https://pinpoint-apm.github.io/pinpoint/techdetail.html
-
-<br/>
-
-<img src="./assets/observability_6.png" style="width: 100%; height: auto;"/>
-
-<br/>
-
-### metric 수집 방식  
+## 1.metric 수집 방식  
 
 <br/>
 
@@ -1211,6 +1138,10 @@ Grafana 의 Backend App 대쉬보드에서 변화되는 metric 을 확인 할 �
 <br/>
 
 
+Thanos
+
+https://willseungh0.tistory.com/193
+
 
 namespace 별  pod 갯수 세기
 
@@ -1311,6 +1242,138 @@ https://ksr930.tistory.com/m/116
 <br/>
 
 
+## 7. prometheus 내부 구조
+
+<br/>
+
+prometheus 의 폴더 구조는 아래와 같으며, 내부적으로 TSDB 를 사용한다.
+
+```bash
+prometheus
+|-- 012345ABCDEF  -> 블록 Chunk 및 기타 메타데이터
+|   |-- chunks
+|   |   `-- 000001 -> 블록 Chunk 파일
+|   |-- index      -> 색인을 위한 라벨 및 시간 inverted index 파일
+|   |-- meta.json
+|   `-- tombstones -> 삭제 여부를 나타내는 파일
+|-- 012345ABCDEF
+|-- 012345ABCDEF
+|-- chunks_head
+|-- lock -> 여러개의 prometheus 실행 방지를 위한 lock file
+|-- queries.active -> 현재 실행 중인 쿼리를 저장. 쿼리 중 crash 시 확인 용도
+`-- wal -> WAL (write ahead logging) 파일
+	|-- 0000003
+    |-- 0000004
+    `-- checkpoint.0000002 -> 프로메테우스가 crash날 경우 복구를 위한 체크포인트 지점
+        `-- 000000
+```  
+
+<br/>
+prometheus 가 데이터를 저장하는 방식에는 크게 두가지가 존재한다
+
+<br/>
+
+- local file system: 일반적인 chunk 블록 파일  
+- In memory: WAL (Write Ahead Logging) 파일 & 인메모리 버퍼  
+
+<br/>
+
+InfluxDB같은 DB와는 달리, 프로메테우스는 레코드를 수집하고 나서 해당 레코드 데이터를 즉시 스토리지에 저장하지 않는다. 일단 들어온 데이터를 인메모리 버퍼에 잔뜩 들고 있다가, 새로 들어온 레코드가 현재 메모리 페이지의 크기를 32KB가 넘어가게 만드는 경우 현재 페이지를 WAL 파일에 Flush 한다. 즉, 일차적으로 데이터를 메모리에 저장하는 것을 원칙으로 하되, 나름 주기적으로 WAL 파일에 백업하는 셈이다. 이렇게 저장되는 데이터 공간 (?) 을 일반적으로 "Head Block" 이라고 부른다.  
+
+<br/>
+
+Head Block의 데이터가 백업되는 WAL 파일은 최대 128MB를 차지할 수 있으며, 128MB가 넘을 경우 새로운 WAL 파일이 생성된다. 이 WAL 파일은 인메모리 데이터의 손실을 방지하기 위한 것인데, 프로메테우스가 비정상적으로 종료되는 crash가 발생할 경우 현재 존재하는 WAL을 다시 읽어들여 원래의 데이터를 복구하는 replay 작업을 수행한다 이 때, WAL 파일을 다시 읽어들이는 기준점은 wal 디렉터리에 존재하는 checkpoint.XXXXX가 된다.
+
+<br/>
+
+참고로 네트워크 스토리지를 쓰게 되면 checkpoint나 WAL 파일이 깨지는 corruption이 발생할 수도 있는데, 그러면 굉장히 골치아파진다. 프로메테우스의 재시작이 계속해서 실패할 수도 있고, 새로운 chunk 블록이 생성이 되지 않아서 이상하게 꼬여버릴 수도 있다.
+
+<br/>
+
+### TSDB의 읽기 쓰기
+
+<br/>
+
+일반적인 TSDB 데이터베이스를 살펴 보면 세로 축은 시계열, 가로 축은 타임 스탬프가 있는 sample 시퀀스입니다.  
+
+Prometheus에는 일반적으로 샘플 데이터가 수백만 개가 있으며 기간은 몇 주 단위입니다.  
+
+
+<img src="./assets/prometheus_structure_1.png" style="width: 80%; height: auto;"/>
+
+
+<br/>
+
+- 쓰기 : 짧은 시간에 많은 시계열에 sample을 추가합니다. 일반적으로 쓰기만 사용합니다.
+         그러나 어느 시점에서 이전 데이터를 자르거나 download 할 수 있습니다.
+         위 예에서는 빨간 부분의 세로로 사용.
+
+- 읽기 : 상대적으로 긴 시간 동안 상대적으로 적은 시계열 (가장 일반적으로 하나)에서 sample을 읽습니다.
+         이는 쓰기 패턴과 정확히 수직이므로 TSDB를 올바르게 설정하기가 어렵습니다.
+         예외가 있지만 대체로 많은 비용이 드는 쿼리는 시계열에 따른 쿼리입니다.
+         위 예에서는 녹색 부분의 가로로 사용.
+
+  *sample : 수집된 데이터
+
+
+<br/>
+
+### prometheus 내부 저장소
+
+<br/>
+
+prometheus는 in-memory에 자체 sample storage 레이어를 사용합니다.
+그리고 하위 저장소로 파일 시스템과 Level DB를 사용합니다. (초기 버전에서는 sample 저장에도 Level DB를 사용)  
+
+Level DB는 Google에서 만든 light-weight의 Key-value 저장소이며, 전반적으로 뛰어난 성능을 보이기에 여러곳에서 사용합니다.
+Level DB는 기본적으로 압축을 지원합니다.  
+
+<br/>
+
+<img src="./assets/prometheus_structure_2.png" style="width: 80%; height: auto;"/>
+
+
+<br/>
+
+### prometheus 데이터 구조
+
+<br/>
+
+시계열 데이터를 처리하기위한 기본 데이터 구조는 다음과 같이 정의 됩니다.
+
+```bash
+type sample struct {
+        Labels map[string]string
+        Value  float64
+}
+```
+ 
+<br/>
+
+prometheus의 메트릭은 다음과 같이 수집됩니다.
+
+
+<img src="./assets/prometheus_structure_3.png" style="width: 80%; height: auto;"/>
+
+<br/>
+
+메트릭명{필드1=값, 필드2=값} 샘플링데이터
+
+<br/>
+
+많은 수의 metric이 발생을 하게 되고, 이를 text/html 방식으로 특정 url(대부분 /metrics)로 export를 해두게 되면, prometheus 서버가 이를 긁어가서 데이터를 저장합니다.   
+
+
+metric 이름이 제일 먼저 나오고, metric의 특징을 표현하는 레이블(label)들이 있습니다. 그리고 가장 마지막으로는 metric 값(value)이 있습니다.
+필요에 따라 timestamp도 표시될 수 있다. timestamp를 보통 출력하지 않는데, 그 이유는 수집하는 순간의 시간으로 값이 기록되기 때문입니다.
+
+<br/>
+
+참고 : https://jjon.tistory.com/m/entry/prometheus-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0
+
+
+<br/>
+
 ## 참고 자료
 
 <br/>
@@ -1357,3 +1420,7 @@ kubernetes 리소스 메트릭 얻기 (prometheus, kube-state-metric, metric-ser
 <br/>
 
 Host Network : https://xn--vj5b11biyw.kr/306
+
+promethues 데이터 구조 : https://jjon.tistory.com/m/entry/prometheus-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0
+
+

@@ -66,8 +66,9 @@ Elastic Stack은 주로 Logstash 를 사용을 하고 opensearch는 Data Prepper
 
 <img src="./assets/data_prepper_1.png" style="width: 100%; height: auto;"/>
 
+<br/>
 
-데이터를 수집하고 Opensearch 로 보내기 위한 Data Prepper를 설정합니다.  
+먼저 데이터를 수집하고 Opensearch 로 보내기 위한 Data Prepper를 설정합니다.  
 configmap 을 생성하기 위한 yaml 화일을 만든다.  
 
 ```bash

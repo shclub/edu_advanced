@@ -1,1 +1,0 @@
-kubectl create rolebinding edu-rolebinding --role=edu-role --user=edu25
