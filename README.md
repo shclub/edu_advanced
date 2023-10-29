@@ -45,12 +45,13 @@
 
     <br/>
 
-1. Chapter 1 : 1시간  ( [가이드 문서보기](./chapter1.md) )  
+1. Chapter 1 : 1시간  ( [가이드 문서보기](./chapter1.md) )    
 
-     - kubernetes Summary
-       - 환경 점검 : okd console 
-       - k8s 아키텍처 및 리소스 
-       - Observability
+     - kubernetes Summary  
+       - 환경 점검 : okd console   
+       - k8s & OKD 구조   
+       - k8s 주요 기능  
+       - Observability  
 
      <br/>
 
