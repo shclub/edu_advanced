@@ -19,3 +19,18 @@ spec:
         image: ghcr.io/shclub/nginx:latest
         ports:
         - containerPort: 80
+---
+apiVersion: v1	
+kind: Service	
+metadata:	
+  name: nginx
+  labels: 
+    app: nginx
+spec:	
+  ports:	
+  - port: 80	
+    targetPort: 80
+    name: http
+  selector:	
+    app: nginx
+  type: ClusterIP        

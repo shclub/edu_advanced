@@ -5,14 +5,15 @@ Opensearch 와 Opentelemetry를 통한 로그 수집 아키텍처를 이해한�
 <br/>
 
 
-
 1. Opensearch 소개
 
 2. Opensearch 설정
 
-3. OpenTelemetry 설명
+3. OpenTelemetry 소개
 
-4. Otel 를 통한 데이터 수집 및 모니터링 실습
+4. OpenTelemetry 설정
+
+5. Otel 를 통한 데이터 수집 및 모니터링 실습
 
 
 
@@ -35,10 +36,13 @@ Public License )
 오픈서치 History : https://www.megazone.com/techblog-opensource-introducing-opensearch/  
 
 
+<br/>
 
-각 기능 설명 : https://velog.io/@skybluelee/OpenSearch  
+기능 설명   
+-  https://velog.io/@skybluelee/OpenSearch    
 
-Opensearch and OTEL : https://itstarter.tistory.com/782  
+Opensearch and OTEL 설명
+- https://itstarter.tistory.com/782  
 
 
 <br/>
@@ -311,7 +315,6 @@ spec:
 
 생성한 yaml 화일을 적용한다.  
 
-
 <br/>
 
 ```bash
@@ -350,7 +353,7 @@ web 브라우저에서 대쉬보드로 로그인 하고 Index Management -> Indi
 
 
 
-## 2. OpenTelemetry 설명
+## 3. OpenTelemetry 소개
 
 <br/>
 
@@ -372,10 +375,6 @@ Opentelemetry 소개
 
 <br/>
 
-<img src="./assets/otel_3.png" style="width: 80%; height: auto;"/>
-
-<br/>
-
 
 Opentelemetry Collector   
 - https://youtu.be/7T2SdvYW-eI?si=9DCpeN8fqsS91GJ6
@@ -389,6 +388,10 @@ Opentelemetry Collector
 
 <br/>
 
+## 4. OpenTelemetry 설정
+
+
+<br/>
 
 ### cert-manager 설치
 
@@ -757,7 +760,7 @@ opentelemetry-opentelemetry-operator-745878dd85-gw88k        2/2     Running   0
 
 <br/>
 
-## 4. Otel 를 통한 데이터 수집 및 모니터링 실습
+## 5. Otel 를 통한 데이터 수집 및 모니터링 실습
 
 <br/>
 
@@ -998,22 +1001,15 @@ OpenTelemetry Operator는 Pod 개체가 생성되거나 업데이트될 때 호�
 <br/>
 
 
+## 참고 자료
 
 <br/>
 
-## 4. k8s logs 수집 하기
 
-<br/>
+- 데이터 스트림 : https://developer-jp.tistory.com/40  
 
-데이터 스트림 
-https://developer-jp.tistory.com/40
-Collector 가 설정이 잘 되었으면 Instrumentation (계측) 을 생성한다.  
-
-
-
-참고 :   
 - https://medium.com/@erikstrm_11611/demystify-opentelemetry-with-opensearch-as-a-single-plane-of-glass-919f884eb568  
-- https://kmaster.tistory.com/49
-- cert-manager 란 : https://velog.io/@wanny328/Kubernetes-Cert-Manager-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0  
-- Kubernetes 환경에서 OpenTelemetry Collector 구성하기 : https://medium.com/@dudwls96/kubernetes-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-opentelemetry-collector-%EA%B5%AC%EC%84%B1%ED%95%98%EA%B8%B0-d20e474a8b18  
+- https://kmaster.tistory.com/49  
+- cert-manager 란 : https://velog.io/@wanny328/Kubernetes-Cert-Manager-%EC%95%8C%EC%95%84%EB%B3%B4%EA%B8%B0    
+- Kubernetes 환경에서 OpenTelemetry Collector 구성하기 : https://medium.com/@dudwls96/kubernetes-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C-opentelemetry-collector-%EA%B5%AC%EC%84%B1%ED%95%98%EA%B8%B0-d20e474a8b18    
 

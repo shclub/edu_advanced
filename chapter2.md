@@ -7,7 +7,7 @@ Prometheus 에 대한 이해와 k8s metric 수집 실습을 진행한다.
 <br/>
 
 
-1. metric 수집 방식
+1. Metric 수집 방식
 
 2. k8s metric 수집 구조
 
@@ -19,13 +19,11 @@ Prometheus 에 대한 이해와 k8s metric 수집 실습을 진행한다.
 
 6. Federation & Thanos 
 
-7. prometheus 내부 구조
+7. Prometheus 내부 구조
 
+<br/>
 
-
-<br
-
-## 1.metric 수집 방식  
+## 1. Metric 수집 방식  
 
 <br/>
 
@@ -317,7 +315,6 @@ Instance: single unit/process (ex:서버 단위, CPU 사용량)
 
 <br/>
 
-
 ### Service Monitor
 
 <br/>
@@ -328,7 +325,6 @@ Instance: single unit/process (ex:서버 단위, CPU 사용량)
 <img src="./assets/prometheus_servicemonitor_1.png" style="width: 100%; height: auto;"/>
 
 <br/>
-
 
 ### Service Monitor 와 prometheus.yaml
 
@@ -387,13 +383,11 @@ scrape_configs:
 <br/>
 
 참고  
-- https://nangman14.tistory.com/75
+- https://nangman14.tistory.com/75  
 - https://alexandre-vazquez.com/prometheus-concepts-servicemonitor-and-podmonitor/ 
 
 
-
 <br/>
-
 
 
 ### OKD 에서 Prometheus 기본 설정
@@ -855,9 +849,7 @@ job을 external-node-exporter 로 설정하고 refresh 한다.
 
 <br/>
 
-
-
-## 5. Application Metric 수집
+## Application Metric 수집 실습 :  Frontend / Backend 
 
 <br/>
 
@@ -879,8 +871,7 @@ thanos-ruler-user-workload-0                           3/3     Running   0      
 
 <br/>
 
-
-namespace를 고정한다.  
+namespace 를 고정한다. ( 교육생은 불필요 ) 
 
 ```bash
 [root@bastion monitoring]# oc  project edu25
@@ -889,7 +880,7 @@ Now using project "edu25" on server "https://api.okd4.ktdemo.duckdns.org:6443".
 
 <br/>
 
-frontend 와 backend Application 을 배포한다.  
+frontend (Express) 와 backend (Quarkus) Application 을 배포한다.  
 
 <br/>
 
@@ -919,8 +910,7 @@ OKD Console 에서 Developer perspective 로 이동하여 우측 상단 Topology
 
 <br/>
 
-
-frontend APP를 호출 해 본다.  
+frontend APP 를 호출 해 본다.  
 
 ```bash
 curl -k https://$(oc get route frontend -o jsonpath='{.spec.host}' )
@@ -936,7 +926,7 @@ Frontend version: v1 => [Backend: http://backend:8080, Response: 200, Body: Back
 
 <br/>
 
-backend APP의 metrics 를 조회해 본다.    
+backend APP 의 metrics 를 조회해 본다.    
 - jvm heap size  
 
 backend 는 Quarkus 로 개발이 되어 있다.  
@@ -987,7 +977,7 @@ jvm_memory_used_bytes{area="nonheap",id="CodeHeap 'non-profiled nmethods'"} 1021
 
 <br/>
 
-backend application 연관 Metric를 체크한다.
+backend application 연관 Metric 를 체크한다.
 
 ```bash
 oc exec  $(oc get pods -l app=backend \
@@ -1038,9 +1028,8 @@ external-node-exporter   28h
 
 <br/>
 
-ServiceMonitor and PodMonitor  를 생성하기 위해서는 monitor-edit 권한이 필요하다.    
+ServiceMonitor and PodMonitor  를 생성하기 위해서는 monitor-edit 권한이 필요하다. ( 사전 부여됨 : monitoring-edit_by_admin.sh)  
  
-
 ```bash
 [root@bastion monitoring]# oc adm policy add-role-to-user monitoring-edit edu25 -n edu25
 clusterrole.rbac.authorization.k8s.io/monitoring-edit added: "edu25"
@@ -1048,9 +1037,7 @@ clusterrole.rbac.authorization.k8s.io/monitoring-edit added: "edu25"
 
 <br/>
 
-siege는 명령어를 사용하여 성능 테스트를 수행합니다.  
-
-siege는 설정한다.  
+siege는 명령어를 사용하여 성능 테스트를 수행합니다. seige를 설정합니다.  
 
 ```bash
 oc create -f tools.yaml
@@ -1125,11 +1112,7 @@ Target 메뉴에서 Status를 확인한다.
 
 Grafana 의 Backend App 대쉬보드에서 변화되는 metric 을 확인 할 수 있다.
 
-
 <img src="./assets/okd_prometheus_user_2.png" style="width: 80%; height: auto;"/>
-
-<br/>
-
 
 <br/>
 
@@ -1138,38 +1121,124 @@ Grafana 의 Backend App 대쉬보드에서 변화되는 metric 을 확인 할 �
 <br/>
 
 
-Thanos
+프로메테우스의 가장 큰 약점은 확장성과 가용성이다.  
+프로메테우스는 클러스터가 지원되지 않는 독립형 서비스로, 프로메테우스 서버 장애시 메트릭을 수집할 수 없다는 것이다.   
 
-https://willseungh0.tistory.com/193
-
-
-namespace 별  pod 갯수 세기
-
-https://devocean.sk.com/blog/techBoardDetail.do?ID=164488
-
-minio 사용 하기 : https://devocean.sk.com/blog/techBoardDetail.do?page=&boardType=undefined&query=&ID=164946&searchData=&subIndex=
+프로메테우스 서버의 장애시간 또는 재설정 등으로 서버 또는 서비스가 재시작 될 동안 타켓에 대한 모니터링을 할 수 없다면 이는 서비스를 운영하는데 매우 큰 리스크이다.  이러한 문제를 해결하기 위해 여러가지 프로메테우스 서버 구성에 대한 아키텍처를 생각해 볼 수 있다.  
 
 
-PromQL: `sum(kube_pod_info) by (namespace)`
+ <br/>
 
-`kube_pod_info`는 kubernetes-exporter를 통해 수집되는 metric
+### 프로메테우스 Federation
 
 <br/>
+
+두 대이상의 프로메테우스 서버를 구성하여, 각 프로메테우스 서버에서 타겟 서버를 교차해서 메트릭을 수집하는 방식이다.  
+
+<img src="./assets/prometheus_federation_1.png" style="width: 80%; height: auto;"/>
+
+<br/>
+
+이러한 방식으로 구성할 경우 관리 해야하는 프로메테우스 서버도 증가하지만, 모니터링 대상이 되는 타겟 서버 입장에서도 여러 프로메테우스 서버로부터 요청되는 메트릭 데이터를 수집 및 전달하기 위해 오버헤드가 발생한다.   
+
+<br/>
+
+또한 프로메테우스로 수집된 데이터를 분석할 때에도, 특정 시점에 장애가 번갈아 발생시, 데이터가 한쪽에만 있게 되므로 중앙에서 한번에 분석하기 불편한 단점이 있다. 
+
+<br/>
+
+프로메테우스 서버를 여러 대 구성하고, 프로메테우스 서버가 다른 프로메테우스 서버로 요청하여 데이터를 수집할 수 있다.  
+
+<br/>
+
+-  Hierarchical Federation 구성은 프로메테우스 서버 사이에 계층을 두고 Tree 형태로 Federation을 구성하는 방법이다. 부모 프로메테우스는 자식 프로메테우스들의 통합 메트릭 제공 및 통합 메트릭을 기반으로 알람을 제공하는 용도로 사용할 수 있다.  
+
+- Cross-service Federation 구성은 동일 레벨의 프로메테우스 서버사이를 Federation으로 구성하는 방법이다.   
+
+<br/>
+
+<img src="./assets/prometheus_federation_2.png" style="width: 80%; height: auto;"/>  
+
+
+<br/>
+
+Federation으로 구성할 경우, 각 프로메테우스 서버는 타겟 서버로부터 일정 주기로 데이터를 수집하고 저장하고, 부모(중앙) 프로메테우스 서버는 각 프로메테우스 서버로부터 저장된 데이터를 별도의 주기로 수집할 수 있어, 데이터양이 많을 때, 평균값이나 해상도 등을 조정할 수 있다.  
+
+<br/>
+
+예를들면 각 프로메테우스 서버는 10초 단위로 수집하고, 중앙 프로메테우스는 1 분 단위로 하위 프로메테우스 서버로 요청하여 평균값 등을 이용할 수 있다. 하지만 각 프로메테우스 서버 장애 시 데이터 유실, 데이터 증가로 인한 중앙 프로메테우스 서버의 오버헤드 증가 문제가 있으므로 일정 규모 이상에서는 적용하기 힘든 부분이 있다.
+
+<br/>
+
+### Thanos
+
+<br/>
+
+Thanos는 프로메테우스의 확장성과 내구성을 향상 시키기 위한 오픈소스 프로젝트로, 프로메테우스의 메트릭 데이터를 분산된 원격 스토리지에 저장하고 조회할 수 있는 기능을 제공한다. 아래 그림에서 서드파티 스토리지로 데이터를 저장하기 위한 Adapter 역할이 Thanos의 기능이다.    
+
+<img src="./assets/prometheus_thanos_1.png" style="width: 80%; height: auto;"/>    
+
+<br/>
+
+ - Thanos를 사용하여 구성 할 경우 아래와 같은 장점이 있다.  
+ - Long-term Storage: 원격 스토리지에 데이터를 안정적으로 저장하여 장기적인 데이터 보존을 가능  
+ - Global Query: 여러 원격 스토리지에서 데이터를 통합하여 조회할 수 있는 Global Query 기능을 제공하여 분산된 데이터에 대해 단일 쿼리를 실행할 수 있어 데이터 분석과 모니터링에 유용  
+ - HA(고가용성): 원격 스토리지에 데이터를 복제하여 프로메테우스 서버 중 하나가 장애가 발생하더라도 데이터의 고가용성을 보장  
+
+<br/>
+
+<img src="./assets/prometheus_thanos_2.png" style="width: 80%; height: auto;"/>    
+
+<br/>
+
+OKD 에는 기본적으로 Thanos 가 설치가 된다.  
+
+`openshift-monitoring` namespace 에 가서 `prometheus-k8s-0` pod를 선택하면 아래에 6개의 container 가 보이고 `thanos-sidecar` 를 확인 할 수 있다.  
+
+<br/>
+
+<img src="./assets/prometheus_thanos_3.png" style="width: 80%; height: auto;"/>    
+
+
+<br/>
+
+### 실습   
+
+
+<br/>
+
+namespace 별 pod 갯수 세기 를 Thanos에서 해봅니다.  
+
+아래 구문은 우리가 사용한 PromQL 입니다.    
+- PromQL: `sum(kube_pod_info) by (namespace)`
+- `kube_pod_info`는 kubernetes-exporter를 통해 수집되는 metric  
+
+<br/>
+
+TOKEN 값과 THANOS_HOST를 찾습니다.  
 
 ```bash
 [root@bastion monitoring]# SECRET=`oc get secret -n openshift-user-workload-monitoring | grep  prometheus-user-workload-token | head -n 1 | awk '{print $1 }'`
 [root@bastion monitoring]# TOKEN=`echo $(oc get secret $SECRET -n openshift-user-workload-monitoring -o json | jq -r '.data.token') | base64 -d`
-[root@bastion monitoring]# THANOS_QUERIER_HOST=`oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host'`
+[root@bastion monitoring]# THANOS_HOST=`oc get route thanos-querier -n openshift-monitoring -o json | jq -r '.spec.host'`
 ```  
 
 <br/>
 
-query 부분에 위 query를 URL-encoding을 수행한 값으로 넣어주면 된다.
+query 는 URL-encoding 형태로 가공이 필요 하여 중간에 --data-urlencode 를 사용합니다.  
 
 <br/>
 
 ```bash
-[root@bastion monitoring]# curl -X GET -kG "https://$THANOS_QUERIER_HOST/api/v1/query?" --data-urlencode "query=sum(kube_pod_info) by (namespace)" -H "Authorization: Bearer $TOKEN"
+[root@bastion monitoring]# curl -X GET -kG "https://$THANOS_HOST/api/v1/query?" --data-urlencode "query=sum(kube_pod_info) by (namespace)" -H "Authorization: Bearer $TOKEN"
+```    
+
+<br/>
+
+Thanos에 접속하여 namespace 별 pod 갯수를 가져 왔습니다.  
+
+Output
+```bash
 {"status":"success","data":{"resultType":"vector","result":[{"metric":{"namespace":"openshift-etcd"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"openshift-kube-apiserver"},"value":[1694754323.376,"9"]},{"metric":{"namespace":"openshift-kube-controller-manager"},"value":[1694754323.376,"6"]},{"metric":{"namespace":"openshift-kube-scheduler"},"value":[1694754323.376,"6"]},{"metric":{"namespace":"openshift-marketplace"},"value":[1694754323.376,"8"]},{"metric":{"namespace":"edu1"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"edu2"},"value":[1694754323.376,"8"]},{"metric":{"namespace":"minio"},"value":[1694754323.376,"2"]},{"metric":{"namespace":"shclub"},"value":[1694754323.376,"9"]},{"metric":{"namespace":"openshift-dns"},"value":[1694754323.376,"6"]},{"metric":{"namespace":"openshift-ingress-canary"},"value":[1694754323.376,"3"]},{"metric":{"namespace":"openshift-machine-config-operator"},"value":[1694754323.376,"6"]},{"metric":{"namespace":"openshift-multus"},"value":[1694754323.376,"10"]},{"metric":{"namespace":"openshift-network-diagnostics"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"openshift-image-registry"},"value":[1694754323.376,"7"]},{"metric":{"namespace":"openshift-monitoring"},"value":[1694754323.376,"13"]},{"metric":{"namespace":"openshift-sdn"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"openshift-cluster-node-tuning-operator"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"haerin"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-operator-lifecycle-manager"},"value":[1694754323.376,"7"]},{"metric":{"namespace":"etcd-backup"},"value":[1694754323.376,"3"]},{"metric":{"namespace":"openshift-oauth-apiserver"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-apiserver"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"argo-rollouts"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"argocd"},"value":[1694754323.376,"7"]},{"metric":{"namespace":"openshift-authentication-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-cloud-credential-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-machine-api"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"openshift-cloud-controller-manager-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-cluster-samples-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-cluster-storage-operator"},"value":[1694754323.376,"4"]},{"metric":{"namespace":"openshift-cluster-version"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-console"},"value":[1694754323.376,"2"]},{"metric":{"namespace":"openshift-console-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-controller-manager"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-dns-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-etcd-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-user-workload-monitoring"},"value":[1694754323.376,"5"]},{"metric":{"namespace":"openshift-ingress-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-insights"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-kube-apiserver-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-kube-controller-manager-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-kube-storage-version-migrator-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-operators"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-cluster-machine-approver"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-kube-storage-version-migrator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"harbor"},"value":[1694754323.376,"9"]},{"metric":{"namespace":"edu5"},"value":[1694754323.376,"2"]},{"metric":{"namespace":"openshift-network-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-authentication"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-apiserver-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-config-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-controller-manager-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-kube-scheduler-operator"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-route-controller-manager"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-ingress"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-service-ca"},"value":[1694754323.376,"1"]},{"metric":{"namespace":"openshift-service-ca-operator"},"value":[1694754323.376,"1"]}]}}
 ```  
 
@@ -1179,7 +1248,7 @@ query 부분에 위 query를 URL-encoding을 수행한 값으로 넣어주면 �
 추가적으로 보기 편하도록 파이썬 모듈인 json.tool을 사용할 수 있다.
 
 ```bash
-[root@bastion monitoring]# curl -X GET -kG "https://$THANOS_QUERIER_HOST/api/v1/query?" --data-urlencode "query=sum(kube_pod_info) by (namespace)" -H "Authorization: Bearer $TOKEN" | python3  -m json.tool
+[root@bastion monitoring]# curl -X GET -kG "https://$THANOS_HOST/api/v1/query?" --data-urlencode "query=sum(kube_pod_info) by (namespace)" -H "Authorization: Bearer $TOKEN" | python3  -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  4749    0  4749    0     0  96918      0 --:--:-- --:--:-- --:--:-- 96918
@@ -1227,20 +1296,7 @@ query 부분에 위 query를 URL-encoding을 수행한 값으로 넣어주면 �
 ...            
 ```  
 
-https://ksr930.tistory.com/m/313
-
-
-federation
-
-https://kmaster.tistory.com/109
-
-node exporter 구문
-
-https://ksr930.tistory.com/m/116
-
-
 <br/>
-
 
 ## 7. prometheus 내부 구조
 
@@ -1269,6 +1325,7 @@ prometheus
 ```  
 
 <br/>
+
 prometheus 가 데이터를 저장하는 방식에는 크게 두가지가 존재한다
 
 <br/>
@@ -1378,49 +1435,60 @@ metric 이름이 제일 먼저 나오고, metric의 특징을 표현하는 레�
 
 <br/>
 
+- Application Metric Test : https://github.com/rhthsa/openshift-demo/blob/main/application-metrics.md  
 
-Application Metric Test : https://github.com/rhthsa/openshift-demo/blob/main/application-metrics.md
+- [Spring] 프로메테우스 (prometheus)  ( 에전에 내가  썻던것 ) : https://hyuuny.tistory.com/220
 
-[Spring] 프로메테우스 (prometheus)  ( 에전에 내가  썻던것 ) : https://hyuuny.tistory.com/220
-
-Node Exporter : https://devocean.sk.com/blog/techBoardDetail.do?ID=163266  
-16
+- Node Exporter : https://devocean.sk.com/blog/techBoardDetail.do?ID=163266  
 
 
-metric 수집 : https://gist.github.com/christophlehmann/b1bbf2821a876c7f91d8eec3b6788f24
+- metric 수집 : https://gist.github.com/christophlehmann/b1bbf2821a876c7f91d8eec3b6788f24  
 
 
-[Monitoring] Prometheus로 Kubernetes 클러스터 모니터링 : https://velog.io/@hyunshoon/Monitoring-Prometheus로-Kubernetes-클러스터-모니터링  
+-  Prometheus로 Kubernetes 클러스터 모니터링 : https://velog.io/@hyunshoon/Monitoring-Prometheus로-Kubernetes-클러스터-모니터링   
 
-Prometheus Journey : https://youtu.be/_bI_WcBc4ak?si=QoZMNBRKGDhTxLjn      
+- Prometheus Journey : https://youtu.be/_bI_WcBc4ak?si=QoZMNBRKGDhTxLjn      
 
-Prometheus helm 설치와 Operator : https://youtu.be/qHIgk547SVA?si=8_f0gBHVEQPxHFOr    
+- Prometheus helm 설치와 Operator : https://youtu.be/qHIgk547SVA?si=8_f0gBHVEQPxHFOr    
 
-Prometheus Exporter 예제 : https://youtu.be/iJyC6A38qwY?si=d3HQ5PDU-pDUGYq1      
+- Prometheus Exporter 예제 : https://youtu.be/iJyC6A38qwY?si=d3HQ5PDU-pDUGYq1      
 
-Prometheus ServiceMonitor 실습 : https://jerryljh.medium.com/prometheus-servicemonitor-98ccca35a13e
+- Prometheus ServiceMonitor 실습 : https://jerryljh.medium.com/prometheus-servicemonitor-98ccca35a13e  
+
+- Kubernetes MultiCluster 환경에서 Prometheus metric 데이터 수집하기 : https://ksr930.tistory.com/m/299   
+
+- https://itnext.io/prometheus-kubernetes-endpoints-monitoring-with-blackbox-exporter-a027ae136b8d  
+
+- Node Exporter 과제 :  https://www.justinpolidori.it/posts/20210829_monitor_external_services_with_promethues_outside_kubernetes/   
+
+- Node Exporter : https://ksr930.tistory.com/m/116  
+
+- kubernetes 리소스 메트릭 얻기 (prometheus, kube-state-metric, metric-server)
+: https://jmholly.tistory.com/m/entry/prometheus%EC%99%80-k8s-metric-server-%EB%B9%84%EA%B5%90  
 
 
-Kubernetes MultiCluster 환경에서 Prometheus metric 데이터 수집하기 : https://ksr930.tistory.com/m/299   
+- [k8s]시작하세요! 도커/쿠버네티스(kubernetes) - 쿠버네티스 모니터링(metrics-server, kube-state-metrics, node-exporter, prometheus, grafana) : https://ihp001.tistory.com/249
 
+- Host Network : https://xn--vj5b11biyw.kr/306  
 
-https://itnext.io/prometheus-kubernetes-endpoints-monitoring-with-blackbox-exporter-a027ae136b8d
-
-
-Node Exporter 과제 :  https://www.justinpolidori.it/posts/20210829_monitor_external_services_with_promethues_outside_kubernetes/ 
-
-kubernetes 리소스 메트릭 얻기 (prometheus, kube-state-metric, metric-server)
-: https://jmholly.tistory.com/m/entry/prometheus%EC%99%80-k8s-metric-server-%EB%B9%84%EA%B5%90
-
+- promethues 데이터 구조 : https://jjon.tistory.com/m/entry/prometheus-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0
 
 <br/>
 
-[k8s]시작하세요! 도커/쿠버네티스(kubernetes) - 쿠버네티스 모니터링(metrics-server, kube-state-metrics, node-exporter, prometheus, grafana) : https://ihp001.tistory.com/249
+### Federation & Thanos
 
 <br/>
 
-Host Network : https://xn--vj5b11biyw.kr/306
+- https://blog.naver.com/PostView.naver?blogId=sqlmvp&logNo=223140909135&categoryNo=0&parentCategoryNo=88&viewDate=&currentPage=1&postListTopCurrentPage=1&from=search
 
-promethues 데이터 구조 : https://jjon.tistory.com/m/entry/prometheus-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EA%B5%AC%EC%A1%B0
+
+- https://tech.osci.kr/%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%9A%B4%EC%98%81-%ED%99%98%EA%B2%BD%EC%9D%98-%EC%9D%B8%ED%94%84%EB%9D%BC-%EB%AA%A8%EB%8B%88%ED%84%B0%EB%A7%81prometheus/  
+
+- https://devocean.sk.com/blog/techBoardDetail.do?ID=164488  
+
+- https://ksr930.tistory.com/m/313  
+- https://kmaster.tistory.com/109  
+
+- minio 사용 하기 : https://devocean.sk.com/blog/techBoardDetail.do?page=&boardType=undefined&query=&ID=164946&searchData=&subIndex=
 
 
