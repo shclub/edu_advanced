@@ -2252,8 +2252,8 @@ roleRef:
 <br/>
 
 ```bash
-[root@bastion elastic]# kubectl apply -f elastic_cloud_admin_cluster_role.yaml -n edu25
-[root@bastion elastic]# kubectl apply -f elastic_cloud_agent_rolebinding -n edu25
+[root@bastion elastic]# kubectl apply -f elastic_cloud_admin_cluster_role.yaml
+[root@bastion elastic]# kubectl apply -f elastic_cloud_agent_rolebinding.yaml
 ``` 
 
 <br/>
