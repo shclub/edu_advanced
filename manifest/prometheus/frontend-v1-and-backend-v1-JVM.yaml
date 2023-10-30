@@ -102,8 +102,8 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
-      version: v1
+      app: "backend"
+      version: "v1"
   template:
     metadata:
       creationTimestamp: null
@@ -126,7 +126,7 @@ spec:
             memory: 300Mi
         env:
           - name: APP_BACKEND
-            value: https://mockbin.org/status/200
+            value: https://httpbin.org/status/200
           - name: APP_VERSION
             value: v1
           - name: quarkus.log.console.color
@@ -145,7 +145,7 @@ spec:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
         operator: Exists
-        tolerationSeconds: 60
+        tolerationSeconds: 60  
 ---
 apiVersion: v1
 kind: Service

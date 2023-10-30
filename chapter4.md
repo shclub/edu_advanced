@@ -1433,7 +1433,7 @@ elNo varchar(20), empMail varchar(25) )\n {executed in 3 msec}
 
 
 배포는 Argocd로 진행을 하며 먼저 아래 github repostory를 fork 합니다. ( fork 안해도 실습 가능 )  
-- https://github.com/shclub/edu_advanced_frontend_gitops/  
+- https://github.com/shclub/edu_advanced_frontend_gitops.git
 
 <br/>
 
