@@ -825,8 +825,8 @@ spec:
             cpu: 2
             memory: "900Mi"
           requests:
-            cpu: 2
-            memory: "900Mi"
+            cpu: 0.2
+            memory: "100Mi"
 ---
 apiVersion: v1
 kind: Service

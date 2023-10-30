@@ -2340,8 +2340,7 @@ service/elastic-agent-integrations created
 NAME                                                    READY   STATUS    RESTARTS       AGE
 backend-springboot-b8cc49c66-c5n5s                      1/1     Running   0              13h
 elastic-agent-integrations-deployment-fd85dfd6b-jvfwx   1/1     Running   0              126m
-<br/>
-```  
+```   
 
 <br/>
 
