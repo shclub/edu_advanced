@@ -1759,6 +1759,20 @@ import 된  dashboard 와 visualize 를 확인 할 수 있습니다.
 
 <br/>
 
+### 실습하기   
+
+<br>
+
+SpringBoot Overview Dashboard 수정해 보기  
+
+<img src="./assets/elastic_saveobject_10.png" style="width: 80%; height: auto;"/>  
+
+<br/>
+
+springboot_edu.ndjson 화일을 import 하여 본인의 data view 로 변경해 봅니다.  
+
+
+<br/>
 
 ## 8. snapshot 설정
 
