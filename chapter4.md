@@ -1364,8 +1364,8 @@ worker.sh 를 실행하여 worker node 에 접속해본다.
 
 ```bash
 root@edu25:~# worker.sh
-Worker Node OKD-7 connect.
-core@okd-7.okd4.ktdemo.duckdns.org's password:
+Worker Node OKD-2 connect.
+core@okd-2.okd4.ktdemo.duckdns.org's password:
 Fedora CoreOS 37.20230218.3.0
 Tracker: https://github.com/coreos/fedora-coreos-tracker
 Discuss: https://discussion.fedoraproject.org/tag/coreos

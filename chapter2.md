@@ -218,8 +218,8 @@ Reveal Values 를 클릭하고 맨 아래로 가면 token 값을 확인 할 수 
 
 ```bash
 root@edu19:~# worker.sh
-Worker Node OKD-7 connect.
-core@okd-7.okd4.ktdemo.duckdns.org's password:
+Worker Node OKD-2 connect.
+core@okd-2.okd4.ktdemo.duckdns.org's password:
 ```  
 
 <br/>
