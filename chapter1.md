@@ -221,6 +221,9 @@ nginx deployment 와 service 를 생성한다.
 
 ```bash
 [root@bastion ] # cat nginx.yaml
+```  
+
+```bash
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -256,7 +259,10 @@ spec:
     name: http
   selector:	
     app: nginx
-  type: ClusterIP 
+  type: ClusterIP
+```  
+
+```bash
 [root@bastion ] # kubectl apply -f nginx.yaml
 [root@bastion ] # kubectl get po
 NAME                                READY   STATUS    RESTARTS   AGE
@@ -277,7 +283,7 @@ nginx   ClusterIP   172.30.69.135   <none>        80/TCP    39m
 <br/>
 
 다른 namespace 의 서비스를 curl 로 호출해본다.    
-- <Service 명 >.<Namespace 명 >:<Port>  
+- <Service 명 >.<Namespace 명 >:<Port 번호>  
 
 <br/>
 
@@ -322,6 +328,9 @@ Commercial support is available at
 
 ```bash
 [root@bastion ] # cat network_policy_nginx.yaml
+```  
+
+```bash
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -341,7 +350,12 @@ spec:
       ports:
         - protocol: TCP
           port: 80
+```
+```bash
 [root@bastion ] # kubectl apply -f network_policy_nginx.yaml
+```  
+Output
+```bash
 networkpolicy.networking.k8s.io/nginx-policy created          
 ```  
 
@@ -363,6 +377,8 @@ kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future versi
 
 ```bash  
 [root@bastion elastic]# kubectl exec -it netshoot sh -n edu24
+```  
+```bash
 ~ # curl nginx.edu1
 <!DOCTYPE html>
 <html>
@@ -400,9 +416,6 @@ Commercial support is available at
 
 ## 3. Observability 
 
-<br/>
-
-참고 : youtube link (차후제공)
 
 <br/>
 
