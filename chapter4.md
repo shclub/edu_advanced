@@ -1297,8 +1297,8 @@ backend-springboot           ClusterIP   172.30.37.27     <none>        80/TCP  
 <br/>
 
 다른 Prometheus integration과 구분하기 위해 name과 namespace 설정  
-- host : backend-springboot.edu25.svc.cluster.local  
-- 예: <서비스 이름>.<namespace>.svc.cluster.local.<포트>    
+- host : backend-springboot.edu25 
+- 예: <서비스 이름>.<namespace>  
 
 <br/> 
 
@@ -1307,8 +1307,8 @@ backend-springboot           ClusterIP   172.30.37.27     <none>        80/TCP  
 <br/>
 
 Metrics Path  를 설정한다.
-- /q/metrics : Quarkus
 - /actuator/prometheus : SpringBoot + Micrometer  
+- /q/metrics : Quarkus   
 
 
 <img src="./assets/prometheus_integration_5.png" style="width: 80%; height: auto;"/>  
@@ -2351,15 +2351,24 @@ elastic 에서 Fleet 으로 이동하면 정상적으로 `solution_integration` 
 
 <br/>
 
-Add Integration을 클릭하고 prometheus를  선택하고 설정을 한다.
+Add Integration을 클릭하고 prometheus를  선택하고 설정을 한다.   
+
+<br/>
+
+이후 설정은 앞의 Prometheus Integration 과정을 따라서 진행을 한다.  
 
 <img src="./assets/elastic_cloud_9.png" style="width: 80%; height: auto;"/>
 
 <br/>
 
-discover 에서 확인한다.  (data view 생성)  
+설정이 완료가 되면 discover 에서 data view를 prometheus-backend 라는 이름으로 생성하고 데이터를 조회해 본다. 
 
 <img src="./assets/elastic_cloud_10.png" style="width: 80%; height: auto;"/>
+
+
+<br/>
+
+Export 했던 SpringBoot overview 대쉬보드를 import 하여 대쉬보드에서 데이터가 잘 보이는지 확인한다.  
 
 <br/> 
 
