@@ -72,7 +72,7 @@ Minio Web Console : https://minio.apps.okd4.ktdemo.duckdns.org
  
 <br/>
 
-- Worker node okd-7 로 접속 : ssh core@ktdemo.duckdns.org -p 32222  
+- Worker node okd-2 로 접속 : ssh core@ktdemo.duckdns.org -p 32222  
 
 
 <br/>
@@ -85,7 +85,7 @@ Minio Web Console : https://minio.apps.okd4.ktdemo.duckdns.org
 Opensearch Dashboard : https://opensearch.apps.okd4.ktdemo.duckdns.org   
 
 
-- 계정 : edu + 순번  ( 예: edu1 )
+- 계정 : edu
 - 비밀번호 : 사전 공지  
 
 <br/>

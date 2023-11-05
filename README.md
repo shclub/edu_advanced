@@ -19,10 +19,11 @@
 <br/>
 
 2023년 B2B 역량 강화 Cloud Native 교육
+-  https://github.com/shclub/edu2023
 
 <br/>
 
-> 과제 :  [과제 문서보기](./homework.md)   
+> 과제 :  [과제 문서보기](https://github.com/shclub/edu2023/blob/master/homework.md)   
 
 <br/>
 
@@ -41,7 +42,8 @@
      - OKD , Grafana , ArgoCD , Elastic Stack , Opensearch , Minio 설치
 
 
-     - 환경 정보  ( [가이드 문서보기](./environment.md) )  
+     - 환경 정보  ( [가이드 문서보기](./environment.md) )    
+     - 실습 yaml 화일 ([manifest 보기](./manifest) )    
 
     <br/>
 
@@ -119,5 +121,38 @@
 
 <br/>
 
-3. Chapter 5 : 2시간   ( [가이드 문서보기](./chapter5.md) )  
+5. Chapter 5 : 2시간   ( [가이드 문서보기](./chapter5.md) )  
+
+     - K8S Network  
+       - CNI : K8S CNI vs AWS EKS CNI
+       - Kube Proxy
+     - 실습
+       - Network Policy
+       - IPtables     
+
+6. Chapter 6 : 2시간   ( [가이드 문서보기](./chapter6.md) )  
+
+     - K8S Security  
+       - Service Account
+       - Role/RoleBinding
+       - Secrert / Token
+       - SSL 인증서
+     - 실습
+       - 서비스에 Let's Encrypt 인증서 적용해 보기  
+
+7. Chapter 7 : 2시간   ( [가이드 문서보기](./chapter7.md) )  
+
+     - Operater 
+       - Operator vs Helm
+       - CRD 
+     - 실습
+       - CRD 생성 하기  ( By python , Java )
+
+
+8. Chapter 8 : 2시간   ( [가이드 문서보기](./chapter8.md) )  
+
+     - 미정 
+       - 미정
+     - 실습
+
 
