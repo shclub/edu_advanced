@@ -123,22 +123,24 @@
 
 5. Chapter 5 : 2시간   ( [가이드 문서보기](./chapter5.md) )  
 
-     - K8S Network  
-       - CNI : K8S CNI vs AWS EKS CNI
-       - Kube Proxy
-     - 실습
-       - Network Policy
-       - IPtables     
+    - CNI  
+    - Cilium  
+    - iptables  
+    - CoreDNS  
+    - AWS EKS networking
+    - Network Policy    
+    - Headless 서비스    
 
-6. Chapter 6 : 2시간   ( [가이드 문서보기](./chapter6.md) )  
+6. Chapter 6 : 4시간   ( [가이드 문서보기](./chapter6.md) )    
 
-     - K8S Security  
-       - Service Account
-       - Role/RoleBinding
-       - Secrert / Token
-       - SSL 인증서
-     - 실습
-       - 서비스에 Let's Encrypt 인증서 적용해 보기  
+    - 보안 component
+    - K8S Security Overview  
+    - Route 에 SSL 인증서 설정     
+    - User Account vs Service Account  
+    - Krew 설명 및 설치  
+    - Kubernetes 보안 Components  
+    - Security Context
+    - Pod Security Policy ( PSP )  
 
 7. Chapter 7 : 2시간   ( [가이드 문서보기](./chapter7.md) )  
 
@@ -148,6 +150,12 @@
      - 실습
        - CRD 생성 하기  ( By python , Java )
 
+
+<br/>
+
+## 3주차
+
+<br/>
 
 8. Chapter 8 : 2시간   ( [가이드 문서보기](./chapter8.md) )  
 
