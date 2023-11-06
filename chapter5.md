@@ -249,7 +249,9 @@ eBPF는 다양한 분야에서 활용되고 연구중입니다. 네트워크 분
 
 <br/>
 
-참고 : https://www.kangtaeho.com/69
+참고   
+- https://www.kangtaeho.com/69
+- https://coffeewhale.com/packet-network3
 
 <br/>
 
@@ -272,6 +274,7 @@ nginx                        ClusterIP   172.30.81.39     <none>        80/TCP  
 ```  
 
 <br/>
+
 worker node에서  nginx 서비스의 ip로 iptables를 조회를 한다.  
 
 ```bash
@@ -662,6 +665,7 @@ Commercial support is available at
 
 참고    
 - https://malwareanalysis.tistory.com/493 
+- https://kimjingo.tistory.com/m/151
 
 <br/>
 
