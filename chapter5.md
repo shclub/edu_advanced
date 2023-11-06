@@ -647,6 +647,14 @@ Commercial support is available at
 
 <br/>
 
+####  CKA 문제   
+
+<br/>
+
+- Create a New NetworkPolicy named allow-port-from-namespace in the existing your namespace .  
+- Ensure that the new NetworkPolicy allows Pods in namespace edu25 to connect port 80 of Pods in your namespace.  
+
+<br/>
 
 ## Headless 서비스  
 

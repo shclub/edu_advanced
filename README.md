@@ -144,11 +144,11 @@
 
 7. Chapter 7 : 2시간   ( [가이드 문서보기](./chapter7.md) )  
 
-     - Operater 
-       - Operator vs Helm
-       - CRD 
-     - 실습
-       - CRD 생성 하기  ( By python , Java )
+    - Operater 
+      - Operator vs Helm
+      - CRD 
+    - 실습
+      - CRD 생성 하기  ( By python , Java )
 
 
 <br/>
