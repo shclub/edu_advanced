@@ -18,8 +18,9 @@ Kubernetes Operator를 이해한다.
 
 <br/>
 
-https://ikcoo.tistory.com/95
-https://ikcoo.tistory.com/96
+참고  
+- https://ikcoo.tistory.com/95
+- https://ikcoo.tistory.com/96
 
 
 ### Operator 란

@@ -157,10 +157,17 @@
 
 <br/>
 
-8. Chapter 8 : 2시간   ( [가이드 문서보기](./chapter8.md) )  
+8. Chapter 8 : 4시간   ( [가이드 문서보기](./chapter8.md) )  
 
-     - 미정 
-       - 미정
-     - 실습
+     - MSA 
+     - Istio
+     - Istio 설치
+     - Istio Demo 실습
+     - 과제
 
+9. Chapter 9 : 3시간   ( [가이드 문서보기](./chapter9.md) )  
 
+     - WebFlux 
+     - Spring Cloud Gateway 
+     - SCG Demo 실습
+     - 과제
