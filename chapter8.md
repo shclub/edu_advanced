@@ -884,6 +884,128 @@ Ingress Gateway > Gateway + VirtualService + Destination Rule > Service > Pod
 
 <br/>
 
+### istio-ingressgateway
+
+<br/> 
+
+istio-ingressgateway는 Cluster의 entry point가 된다.  
+ 
+쿠버네티스에서 nginx ingress controller와 동일하게 ingress controller 역할을 수행한다.  
+
+로드밸런서 역할을 수행하며 pod로서 동작한다.
+
+<br/>
+
+### Gateway  
+
+<br/>
+
+gateway는 단어처럼 어느 호스트의 요청, 포트 등을 처리할지 gateway 역할을 수행한다.  
+
+<br/>
+
+### virtual service  
+
+<br/>
+
+참고 : https://happycloud-lee.tistory.com/108
+
+<br/>
+
+VirtualService: URI, HTTP Header등을 이용한 Rule에 따라 트래픽을 라우팅해 줌   
+
+- 라우팅 조건 지정: uri, scheme, method, authority, headers, port, sourceLabels, gateways, queryParams 이용  
+- 라우팅 대상 지정: destionation 서비스명/PORT번호/subset, 재시도 횟수, 라우팅 비중 정의. subset정의 시 destinationrule 필요.
+
+<br/>
+
+세부 기능   
+
+- 한 VS에 여러개 rule 정의하여 분기 가능  
+- 외부와 in/out처리(ingress, egress)를 위해 Gateway와 함께 사용 가능  
+- 대상 서비스에 대한 제반 rule을 지정하기 위해 destinationrule과 함께 사용 가능  
+- 구성  
+  참고: https://istio.io/docs/reference/config/networking/virtual-service/#HTTPMatchRequest    
+  - host: rule이 적용될 HOST로서 IP, FQDN(Fully Qualified Domain Name), k8s SERVICE name 지정    
+  - match: rule 지정(uri, scheme, method, authority, headers, port, sourceLabels, gateways, queryParams 이용).  
+  - routing  
+    - route:  
+      - destination: target service, port, subset  
+      - retries: 재시도 정의  
+      - weight: 라우팅 비중 정의  
+    - rewrite: 요청된 request uri를 rewrite하고 routing할 때 사용. route와 rewrite는 같이 사용할 수 없다.  
+    - redirect: redirect시킬때 사용  
+  - fault: 에러를 일부러 발생시키기 위해 사용   
+  	- delay  
+    	- percentage: 몇%의 request에 대해 delay할지 지정  
+        	- value  
+        - fixedDelay: 몇초 또는 몇ms동안 delay시킬지 지정  
+    - abort:  
+    	- percentage: 몇%의 request에 대해 abort할지 지정  
+        	- value  
+        - httpStatus: 리턴할 코드(예: 404, 503)  
+
+
+<br/>
+
+### destination rule 
+
+<br/>
+
+destinationrule: 대상 서비스에 대한 제반 rule 정의  
+
+- rule종류: connectionPool, L/B, outlierDetection, tls  
+- 전체에 적용할 정책과 subset(version)별로 적용할 정책을 정의할 수 있음  
+
+<br/>
+
+세부 기능   
+
+<br/>
+
+  - 구성  
+    참고: https://istio.io/docs/reference/config/networking/destination-rule/  
+    - host: 적용할 service명  
+    - TrafficPolicy  
+      - connectionPool  
+        - tcp: maxConnection, connectTimeout, tcpKeepalive  
+        - http: http1MaxPendingRequests, http2MaxRequest, maxRequestsPerConnection, maxRetries, idleTimeout, h2UpgradePolicy  
+      - loadBalancer  
+        - simple: ROUND_ROBIN, LEAST_CONN, RANDOM, PASSTHROUGH  
+        - consistentHash: httpHeaderName, httpCookie, useSourceIp, minimumRingSize  
+        - localityLbSetting: source traffic의 지역에 따른 L/B. {region}/{zone}/{sub-zone}형식의 label 이용.  
+          - distribute: from, to. from zone을 to sub-zone으로 어떻게 분배할지 비율 지정.  
+          - failover: from, to. from region 라우팅 실패 시 failover할 to region지정.  
+          - enabled: true OR false. locality L/B 사용여부.  
+      - outlierDetection: circuit break를 위한 에러 발 조건 정의  
+        - interval: 몇분동안  
+        - consecutiveErrors: 몇번 에러가 발생하면  
+        - baseEjectionTime: 몇분동안 502, 503, 504 error를 발생시킬지 정의  
+      - tls: SSL/TLS관련 정책 정의  
+        - mode: DISABLE/SIMPLE/MUTUAL/ISTIO_MUTUAL  
+        - clientCertificate: client-side TLS인증서 파일 경로  
+        - privateKey: client private key 인증서 파일 경로  
+        - caCertificates: server 인증서 파일 경로  
+        - subjectAltNames: 서버 name list  
+        - sni: TLS handshake중에 서버에 제공할 sni문자열  
+      - portTrafficPolicy: 포트별 정책 정의  
+        - port: 포트 번호  
+        - trafficPolicy: 이 포트에만 적용할 정책 정의   
+          - loadBalancer  
+          - connectionPool  
+          - outlierDetection  
+          - tls  
+    - subsets: label이용한 version 목록 정의  
+      - name: version명  
+      - labels: label 값  
+        - version  
+      - trafficPolicy: 이 버전에만 적용할 trafficPolicy 정의  
+        - loadBalancer  
+        - connectionPool  
+        - outlierDetection  
+        - tls  
+    - exportTo: rule을 적용할 namespace- 현재 namespace는 '.', 전체 namespace는 '*'임. 생략하면 전체 namespace에 적용됨.  
+
 ## Istio Demo 실습 
 
 <br/>
@@ -1222,16 +1344,93 @@ istio-demo   istio-demo-edu.apps.okd4.ktdemo.duckdns.org          productpage   
 
 <br/>
 
-### 과제 
-
-<br/>
-
-edu25의 nginx 서비스를 호출 합니다.  
+## 과제 
 
 <br/>
 
 
-## Istio 실전 실습 
+### Traffic 분산해 보기 
+
+<br/>
+
+참고 : https://istio.io/latest/docs/tasks/traffic-management/traffic-shifting/    
+
+
+<br/>
+
+review 버전 v1을 호출하도록 virtual service를 생성합니다.  
+
+```bash
+kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+```  
+
+<br/>
+
+destinationrule 이라는 리소스를 먼저 만듭니다. 
+
+```bash
+kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml 
+```
+
+<br/>
+
+```bash
+ kubectl get destinationrule  또는 kubectl get dr
+```  
+
+<br/>
+
+productpage를 접근하여 대여섯번 refresh합니다. 그리고 kiali 페이지에서 맨 우측 상단의 refresh 아이콘을 누릅니다.
+
+<br/>
+
+<img src="./assets/istio_demo_4.png" style="width: 80%; height: auto;"/>  
+
+<br/>
+
+이번에는 review v2 , v3를 호출하도록 바꿉니다. 
+
+```bash
+ kubectl apply -f virtual-service-reviews-v2-v3.yaml
+```  
+
+productpage를 접근하여 대여섯번 refresh합니다. v2가 호출되면 검은색 별점이 나타나고, v3가 호출되면 빨간색 별점이 표시됩니다.   
+
+그리고 kiali 페이지에서 맨 우측 상단의 refresh아이콘을 누릅니다. 
+
+<br/>
+
+<img src="./assets/istio_demo_5.png" style="width: 80%; height: auto;"/>  
+
+<br/>
+
+이번에는 review v3를 호출하도록 바꿉니다.    
+
+```bash
+kubectl apply -f virtual-service-reviews-v3.yaml
+```  
+
+- productpage를 접근하여 대여섯번 refresh합니다. 이번에는 항상 빨간색 별점이 표시됩니다.  
+
+그리고 kiali 페이지에서 맨 우측 상단의 refresh아이콘을 누릅니다.  v2쪽으로도 라우팅 되는게 보이다가 계속 refresh하면 v3로만 라우팅 되는걸로 나올겁니다. 지난 1분의 라우팅을 보여주기 때문에 약간 시간 차이가 발생합니다. 
+
+<br/>
+
+
+<img src="./assets/istio_demo_6.png" style="width: 80%; height: auto;"/>  
+
+
+<br/>
+
+돌발 퀴즈 :  
+
+v3 서비스에서 문제가 발생을 하여 서비스를 차단해야 합니다. 서비스를 차단해 보고 복구합니다.  
+- kiali 에서 가능
+
+<br/>
+
+### Istio 실전 실습 
+
 
 <br/>
 
