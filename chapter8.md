@@ -1099,6 +1099,10 @@ oc adm policy add-scc-to-user anyuid -z bookinfo-details
 oc adm policy add-scc-to-user anyuid -z bookinfo-ratings
 oc adm policy add-scc-to-user anyuid -z bookinfo-productpage
 oc adm policy add-scc-to-user anyuid -z bookinfo-reviews
+oc adm policy add-scc-to-user privileged -z bookinfo-details
+oc adm policy add-scc-to-user privileged -z bookinfo-ratings
+oc adm policy add-scc-to-user privileged -z bookinfo-productpage
+oc adm policy add-scc-to-user privileged -z bookinfo-reviews
 ```
 
 
@@ -1121,11 +1125,11 @@ spec:
   profile: empty
   components:
     ingressGateways:
-      - name: edu-ingressgateway # <namespacce>-ingressgateway
+      - name: edu-ingressgateway # <namespace>-ingressgateway
         namespace: edu # 본인 namespace
         enabled: true
         label:
-          istio: edu-ingressgateway # <namespacce>-ingressgateway
+          istio: edu-ingressgateway # <namespace>-ingressgateway
   hub: docker.io/istio
   values:
     global:
@@ -1156,13 +1160,20 @@ pod 와 서비스가 생성된 것을 확인힙니다.
 위에서 설치한 pod 들을 보면 container 가 2개씩 되어 있는 것을 확인할 수 있습니다.  
 
 ```bash
-[root@bastion istio]# kubectl get po -n edu
-NAME                                 READY   STATUS    RESTARTS   edu-ingressgateway-f4f5ffbf9-v76gh   1/1     Running   0          17h
-productpage-v1-6766847957-pdfxn      2/2     Running   0          3d1h
-ratings-v1-7cd8bb76c8-5bq5w          2/2     Running   0          3d1h
-reviews-v1-8955dc448-tl6j5           2/2     Running   0          3d1h
-reviews-v2-64776cb9bd-fzbs8          2/2     Running   0          3d1h
-reviews-v3-5c8886f9c6-tfbjx          2/2     Running   0          3d1h
+[root@bastion istio-1.19.3]# kubectl get po -n edu
+NAME                                    READY   STATUS    RESTARTS   AGE
+details-v1-ccbdcf56-fk7hk               2/2     Running   0          4d3h
+edu-ingressgateway-f4f5ffbf9-v76gh      1/1     Running   0          43h
+edu12-ingressgateway-54f6cff955-rrgqx   1/1     Running   0          45m
+edu24-ingressgateway-849bf6958c-5g6jj   1/1     Running   0          52m
+edu5-ingressgateway-556dbc5dbc-zcpzv    1/1     Running   0          65m
+edu9-ingressgateway-7c8457bcb7-99pxq    1/1     Running   0          62m
+nginx                                   2/2     Running   0          25h
+productpage-v1-6766847957-pdfxn         2/2     Running   0          4d3h
+ratings-v1-7cd8bb76c8-5bq5w             2/2     Running   0          4d3h
+reviews-v1-8955dc448-tl6j5              2/2     Running   0          4d3h
+reviews-v2-64776cb9bd-fzbs8             2/2     Running   0          4d3h
+reviews-v3-5c8886f9c6-tfbjx             2/2     Running   0          4d3h
 [root@bastion istio]# kubectl get svc -n edu
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                      AGE
 details              ClusterIP   172.30.123.32    <none>        9080/TCP                                     3d1h
