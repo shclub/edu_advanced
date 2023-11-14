@@ -447,15 +447,12 @@ Begin the Istio pre-installation check by running:
 Need more information? Visit https://istio.io/latest/docs/setup/install/
 ```  
 
-
-istioctl manifest generate --set profile=openshift | kubectl delete --ignore-not-found=true -f -
-
 <br/>
 
 PATH 설정을 합니다.  
 
 ```bash
-[root@bastion istio]# export PATH=$PWD/bin:$PATH
+[root@bastion istio]# export PATH="$PATH:/root/istio/istio-1.19.3/bin"
 ```
 
 <br/>
@@ -484,8 +481,138 @@ Istio configuration profiles:
 
 <br/>
 
+istio를 설치 하기전에 모든 pod에 istio-proxy 가 설치가 되면 docker rate limit ( 1개 서버  6시간 동안 100번 호출) 로 private docker registry를 설치한다.   
 
-Istio-cni 설치 하기 않기 때문에 openshift-profile.yaml 에서 `cni` 를 `false` 로 `privileged: true` 로 설정합니다.  
+Harbor를 설치되어 있기 때문에 아래와 같이 설정을 한다. 
+
+
+<br/>
+
+먼저 registry 메뉴로 이동하여 `New Endpoint` 를 생성한다.  
+- provider : Docker Hub 선택  
+
+<img src="./assets/docker_proxy_1.png" style="width: 80%; height: auto;"/>     
+
+<br/>
+
+아래와 같이 `Endpoint` 가 생성이 된다.  
+
+<img src="./assets/docker_proxy_1_1.png" style="width: 80%; height: auto;"/>     
+
+<br/>
+
+신규 프로젝트를 생성합니다.  
+- proxy cache를 선택하고 앞에서 생성한 endpoint를 선택합니다.  
+
+<img src="./assets/docker_proxy_2.png" style="width: 80%; height: auto;"/>       
+
+<br/>
+
+아래와 같이 proxy 라는 이름으로 생성 된것을 확인한다.  
+
+<img src="./assets/docker_proxy_3.png" style="width: 80%; height: auto;"/>       
+
+<br/>
+
+proxy 를 통해 nginx를 pull 해봅니다.    
+- `<private docker registry 이름 >`/`<project 이름>`/ 
+- 예) myharbor.apps.okd4.ktdemo.duckdns.org/proxy/   
+
+<br/>
+
+
+```bash
+[root@bastion istio]# podman pull myharbor.apps.okd4.ktdemo.duckdns.org/proxy/nginx
+Trying to pull myharbor.apps.okd4.ktdemo.duckdns.org/proxy/nginx:latest...
+Getting image source signatures
+Copying blob 6f837de2f887 done
+Copying blob 578acb154839 done
+Copying blob e398db710407 done
+Copying blob 85c41ebe6d66 done
+Copying blob 7170a263b582 done
+Copying blob 8f28d06e2e2e done
+Copying blob c1dfc7e1671e done
+Copying config c20060033e done
+Writing manifest to image destination
+Storing signatures
+c20060033e06f882b0fbe2db7d974d72e0887a3be5e554efdb0dcf8d53512647
+```  
+
+<br/>
+
+아래 처럼 docker 에서 받은것과 같은 용량 , 같은 Image ID 인 것을 알수 있다.   
+
+```bash
+[root@bastion istio]# podman images
+REPOSITORY                                                 TAG         IMAGE ID      CREATED        SIZE
+docker.io/library/nginx                                    latest      c20060033e06  12 days ago    191 MB
+myharbor.apps.okd4.ktdemo.duckdns.org/proxy/library/nginx  latest      c20060033e06  12 days ago    191 MB
+```  
+
+<br/>
+
+워커 노드에 접속하여 podman 의 경우는 `/etc/containers/registries.conf.d` 로 이동하여 `myregistry.conf` 라는 이름으로 화일을 하나 생성한다.  
+
+```bash
+[root@bastion containers]# cd /etc/containers/registries.conf.d
+[root@bastion registries.conf.d]# vi myregistry.conf
+```  
+
+<br/>
+
+`location` 에 harbor 주소를 적어 주고 `insecure` 옵션은 `true` 로 설정한다.  
+
+```bash
+[[registry]]
+location = "myharbor.apps.okd4.ktdemo.duckdns.org"
+insecure = true
+```   
+
+<br/>
+
+pod 생성시 해당 registry 를 가져 오지 못하는 문제가 있는데 이런경우  
+
+`insecureEdgeTerminationPolicy` 을 `Redirect` 에서 `Allow` 로 변경한다.   
+
+<br/>
+
+```bash
+[root@bastion istio]# kubectl get route -n harbor
+NAME                      HOST/PORT                               PATH          SERVICES           PORT       TERMINATION     WILDCARD
+my-harbor-ingress-9q9rt   myharbor.apps.okd4.ktdemo.duckdns.org   /service/     my-harbor-core     http-web   edge/Redirect   None
+my-harbor-ingress-dmcxg   myharbor.apps.okd4.ktdemo.duckdns.org   /c/           my-harbor-core     http-web   edge/Redirect   None
+my-harbor-ingress-g9k99   myharbor.apps.okd4.ktdemo.duckdns.org   /v2/          my-harbor-core     http-web   edge/Redirect   None
+my-harbor-ingress-rsbjh   myharbor.apps.okd4.ktdemo.duckdns.org   /chartrepo/   my-harbor-core     http-web   edge/Redirect   None
+my-harbor-ingress-smvwk   myharbor.apps.okd4.ktdemo.duckdns.org   /             my-harbor-portal   <all>      edge/Redirect   None
+my-harbor-ingress-w2bps   myharbor.apps.okd4.ktdemo.duckdns.org   /api/         my-harbor-core     http-web   edge/Redirect   None
+```  
+
+<br/>
+
+변경한다.  
+
+```bash  
+[root@bastion istio]# kubectl edit route my-harbor-ingress-smvwk -n harbor
+route.route.openshift.io/my-harbor-ingress-smvwk edited
+```  
+
+<br/>
+
+변경후 TERMINATION을 확인한다.    
+
+```bash
+[root@bastion istio]# kubectl get route -n harbor
+NAME                      HOST/PORT                               PATH          SERVICES           PORT       TERMINATION     WILDCARD
+my-harbor-ingress-smvwk   myharbor.apps.okd4.ktdemo.duckdns.org   /             my-harbor-portal   <all>      edge/Allow      None
+```  
+
+<br/>
+
+Istio-cni 설치 하기 않기 때문에 openshift-profile.yaml 에서 `cni` 를 `false` 로 `privileged: true` 로 설정합니다.    
+
+그리고 hub 정보를 docker hub가 아닌 위에서 설정한 private docker registry 로 변경합니다.  
+
+<br/>
 
 ```bash
 [root@bastion istio]# cat openshift-profile.yaml
@@ -508,7 +635,7 @@ spec:
       enabled: false
     pilot:
       enabled: true
-  hub: docker.io/istio
+  hub:  myharbor.apps.okd4.ktdemo.duckdns.org/proxy/istio #docker.io/istio
   meshConfig:
     defaultConfig:
       proxyMetadata: {}
@@ -663,17 +790,32 @@ spec:
 
 <br/>
 
+수정내용  
+
 ```bash 
-...
+   ...
       7     cni:
-      8       enabled: false      
+      8       enabled: false ## 변경
+      9       namespace: kube-system
+   ...  
+     20   hub: myharbor.apps.okd4.ktdemo.duckdns.org/proxy/istio  # 변경 docker.io/istio
      97       proxy:
-   ... 
-    108         privileged: true
-    ...      
-        istio_cni:
-      chained: false
-      enabled: false
+     97       proxy:
+     98         autoInject: enabled
+     99         clusterDomain: cluster.local
+    100         componentLogLevel: misc:error
+    101         enableCoreDump: false
+    102         excludeIPRanges: ""
+    103         excludeInboundPorts: ""
+    104         excludeOutboundPorts: ""
+    105         image: proxyv2
+    106         includeIPRanges: '*'
+    107         logLevel: warning
+    108         privileged: true #변경
+    ...
+    134     istio_cni:
+    135       chained: false # 변경
+    136       enabled: false # 변경
 ```  
 
 <br/>
@@ -691,12 +833,51 @@ This will install the Istio 1.19.3 "openshift" profile (with components: Istio c
 
 <br/>
 
-cni를 설치 하지 않았기 때문에 `devops` namespace의 `default` serviceaccount 에 권한을 생성합니다.  
+삭제 방법  
 
 ```bash  
-oc adm policy add-scc-to-user anyuid -z default -n devops
-oc adm policy add-scc-to-user privileged -z default -n devops
-```    
+[root@bastion istio]# istioctl operator remove --force
+Operator controller is not installed in istio-operator namespace (no Deployment detected).
+All revisions of Istio operator will be removed from cluster, Proceed? (y/N) y
+Removing Istio operator...
+✔ Removal complete
+```  
+
+<br/>
+
+```bash  
+[root@bastion istio]# istioctl uninstall -f openshift-profile.yaml --force
+```
+
+<br/>
+
+설치시에 아래 에러가 발생하는 경우 `mutatingwebhookconfigurations.admissionregistration.k8s.io` 를 찾아 삭제한다.  
+
+```bash   
+Error: failed to install manifests: errors occurred during operation: creating default tag would conflict:
+Error [IST0139] (MutatingWebhookConfiguration istio-sidecar-injector ) Webhook overlaps with others: [istio-revision-tag-default/namespace.sidecar-injector.istio.io]. This may cause injection to occur twice.  
+```  
+
+<br/>
+
+`istio-revision-tag-default` 를 확인한다.  
+
+```bash
+[root@bastion istio]#  kubectl get mutatingwebhookconfigurations.admissionregistration.k8s.io
+NAME                                            WEBHOOKS   AGE
+cert-manager-webhook                            1          34d
+istio-revision-tag-default                      4          6d
+opentelemetry-opentelemetry-operator-mutation   3          34d
+```  
+
+<br/>
+
+`istio-revision-tag-default` 를 삭제합니다.  
+
+```bash
+[root@bastion istio]#  kubectl delete  mutatingwebhookconfigurations.admissionregistration.k8s.io istio-revision-tag-default
+mutatingwebhookconfiguration.admissionregistration.k8s.io "istio-revision-tag-default" deleted
+```
 
 <br/>
 
@@ -1056,13 +1237,12 @@ productpage, detail, review, rating의 4가지 마이크로서비스로 구성�
 
 <img src="./assets/istio_bookinfo_1.png" style="width: 80%; height: auto;"/>      
 
-
 <br/>
 
 각 마이크로서비스의 아키텍처는 아래와 같습니다.  
 마이크로서비스의 큰 특성중 하나인 Poly-glot(마이크로서비스별 상이한 기술 적용)으로 구성되어 있습니다.
 
-<img src="./assets/istio_demo_1.png" style="width: 80%; height: auto;"/>  
+<img src="./assets/istio_demo_0.png" style="width: 80%; height: auto;"/>  
 
 <br/>
 
@@ -1072,8 +1252,11 @@ Bookinfo demo 서비스를 생성합니다.
 
 <br/>
 
+다른 환경에서 테스트 할 때는 samples/bookinfo/platform/kube/bookinfo.yaml 사용하지만 docker pull rate limit 이슈로  manifest -> istio 폴더의 bookinfo.yaml (github로 image 변경) 화일을 사용합니다.   
+
+
 ```bash
-[root@bastion istio-1.19.3]# kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+[root@bastion istio-1.19.3]# kubectl apply -f bookinfo.yaml
 service/details created
 serviceaccount/bookinfo-details created
 deployment.apps/details-v1 created
@@ -1105,7 +1288,6 @@ oc adm policy add-scc-to-user privileged -z bookinfo-productpage
 oc adm policy add-scc-to-user privileged -z bookinfo-reviews
 ```
 
-
 <br/>
 
 우리는 `istio-system` 의 `istio-gatewayingress` 를 사용하지 않고 custom gatewayingress를 생성하려고 합니다.    
@@ -1120,16 +1302,16 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   namespace: istio-system # 수정하지 말것
-  name: edu-gateway  # <namespacce>-gateway
+  name: edu-gateway  # 수정 : <namespacce>-gateway
 spec:
   profile: empty
   components:
     ingressGateways:
-      - name: edu-ingressgateway # <namespace>-ingressgateway
-        namespace: edu # 본인 namespace
+      - name: edu-ingressgateway # 수정 :  <namespace>-ingressgateway
+        namespace: edu # 수정 : 본인 namespace
         enabled: true
         label:
-          istio: edu-ingressgateway # <namespace>-ingressgateway
+          istio: edu-ingressgateway # 수정 : <namespace>-ingressgateway
   hub: docker.io/istio
   values:
     global:
